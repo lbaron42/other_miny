@@ -1,0 +1,168 @@
+FURTHER HELP:		https://github.com/achrafelkhnissi/minishell
+
+readline			=	will read a LINE from the TERMINAL and return it; 
+						requires a FREE afterwards to clear out memory
+
+							char *readline (char *prompt)
+								prompt = readline("[minishell][:)]~> ");
+								add_history(prompt);
+								printf("%s", prompt);
+								ft_free(prompt);
+						
+						
+rl_clear_history	=	clears the history list by DELETING all of the entries
+
+							rl_clear_history (void)
+							
+							
+rl_on_new_line		=	tells update routines that we have moved onto a new (empty) line;
+						usually after ouputting a NEWLINE
+						
+							int rl_on_new_line (void)
+								
+								
+rl_replace_line		=	REPLACES the contents of rl_line_buffer with text;
+						if clear_undo is non-zero, the undo list is CLEARED
+						
+							void rl_replace_line (const char *text, int clear_undo)
+							
+							
+rl_redisplay		=	displays on the screen the CURRENT contents of rl_line_buffer
+
+							void rl_redisplay (void)
+
+
+add_history			=	will SAVE the line in the history (see readline example)
+
+
+access				=	will check if the given PATH can be accessed
+
+							int access(const char *pathname, int mode)
+							
+							
+signal				=	check the LIST OF SIGNALS in the respective pdf file
+
+
+sigaction			=	used to change the action taken by a specific PROCESS
+
+
+sigemptyset			=	initializes the SIGNAL set given by set to EMPTY
+
+							int sigemptyset(sigset_t *set)
+							
+
+sigaddset			=	adds SIGNAL signum from set
+sigdelset			=	deletes SIGNAL signum from set
+
+							int sigdelset(sigset_t *set, int signum)
+							int sigaddset(sigset_t *set, int signum)
+							
+kill				=	sends a SIGNAL to a PROCESS or a GROUP of processes
+
+							int kill(pid_t pid, int sig)
+
+
+getcwd				=	gets the current working DIRECTORY
+chdir				=	changes the current working DIRECTORY
+
+							char *getcwd(char *buf, size_t size)
+							int chdir(const char *path)
+
+
+stat				=	obtains INFORMATION about a file and forwards it to the buffer
+lstat				=	works like stat, extracts information about the SYMBOLIC LINK instead
+fstat				=	extracts information from an open FILE DESCRIPTOR and writes into buffer
+
+							int stat(const char *restrict path, struct stat *restrict buf)
+							int lstat(const char *restrict path, struct stat *restrict buf)
+							int fstat(int fildes, struct stat *buf)
+							
+unlink				=	removes a SYMBOLIC LINK from a file 
+
+							int unlink(const char *path)
+							
+execve				=	RUNS a given command/exe from a path/directory buffer;
+						check pipex for an actual example
+
+						cmd = ft_join(c->path[i], c->cmd);
+						if (!cmd)
+							return ;
+						if (execve(cmd, c->args, envp) != -1)
+						{
+							free(cmd);
+							exit(EXIT_SUCCESS);
+						}
+						free(cmd);
+
+
+opendir				=	 OPENS a directory stream to the given directory name; 
+						 RETURNS a POINTER to the directory stream
+
+							DIR *opendir(const char *name)
+
+readdir				=	RETURNS a POINTER to a dirent structure representing the next 
+						directory entry in the directory stream pointed to by dirp
+						
+							struct dirent *readdir(DIR *dirp)
+							
+closedir			=	CLOSES the DIRECTORY stream associated with dirp; 
+						a successful call closes the underlying FILE DESCRIPTOR
+						
+							int closedir(DIR *dirp)
+
+
+isatty				=	tests if a FILE DESCRIPTOR refers to a TERMINAL;
+						returns 1 if successful, otherwise an error with 0
+
+							int isatty(int fd)
+
+
+ttyname				=	returns a POINTER to the null-terminated PATHNAME of the terminal 
+						device that is open on the FILE DESCRIPTOR fd, or NULL on error 
+						
+							char *ttyname(int fd);int ttyname_r(int fd, char *buf, size_t buflen)
+
+
+ttyslot				=	finds the SLOT of the current user's terminal in some file
+
+							int ttyslot(void)
+					
+					
+ioctl				=	sends various COMMANDS to a STREAMS-device
+						list of available commands: https://linux.die.net/man/3/ioctl
+
+							int ioctl(int fildes, int request, ... /* arg */)
+							
+tcsetattr			=	changes TERMINAL attributes
+tcgetattr			=	gets TERMINAL attributes
+
+							int tcsetattr(int fd, int optional_actions, \
+								const struct termios *termios_p)
+							int tcgetattr(int fd, struct termios *termios_p)
+							
+							
+tgetent				=	loads the ENTRY for NAME: it returns 1 on success, 0 if there 
+						is no such entry, and -1 if the terminfo database could not be found
+
+							int tgetent(char *bp, const char *name)
+							
+							
+tgetflag			=	gets the BOOLEAN ENTRY for id, or zero if it is not available
+tgetnum				=	routine gets the NUMERIC ENTRY for id, or -1 if it is not available
+
+							int tgetflag(char *id)
+							int tgetnum(char *id)
+							
+tgetstr				=	will FETCH ca or any other parameterized STRING, be aware that it will 
+						be returned in TERMINFO notation and not the termcap notation
+						
+							char *tgetstr(char *id, char **area)
+							
+tgoto				=	instantiates the PARAMETERS into the given capability; 
+						the output from this routine is to be passed to tputs
+						
+							char *tgoto(const char *cap, int col, int row)
+						
+tputs				=	it can RETRIEVE capabilities by either termcap or terminfo name
+
+							int tputs(const char *str, int affcnt, int (*putc)(int))

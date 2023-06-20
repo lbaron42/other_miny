@@ -1,0 +1,35 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    missing.txt                                        :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: agrun <marvin@42.fr>                       +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2023/05/30 13:21:38 by agrun             #+#    #+#              #
+#    Updated: 2023/05/30 13:21:42 by agrun            ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+================================================================================
+	      THINGS TO CONSIDER AND ADD FOR THE MINISHELL-PROJECT
+================================================================================
+
+- implement a struct as the global variable		 	| 0% by us
+
+- implement structs for pipex and parsing			| 0% by us
+-> check every word in the prompt line if it's an 
+	accessable command! respect echo prefix!
+
+- implement pipex/env-path support/execve			| ???% by Luiz
+
+- implement redirections (< & << & >> & >)			| 0% by us
+
+- implement signal/interactive mode support			| 100% by Adrian
+   -> catching ctrl-c & ctrl-d & ctrl-\
+
+- implement bash/shell commands (mostly echo)			| 90% by Adrian
+
+- implement flag & $? support					| 100% by Adrian
+
+- make check_command go through a parsed list of		| ???% by Adrian
+  words and commands to finish off the project

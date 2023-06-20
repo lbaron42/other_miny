@@ -1,0 +1,35 @@
+observations: 
+env liar -> will create this error: "env : 'liar' : No such file or directory"
+		 -> env should only work on its own with no options or arguments according to project description
+		 -> an error would be redundant since it would imply functionality
+		 => solution: display nothing if env is being used faulty
+
+pwd liar -> will omit the "liar" suffix and only display the work directory
+		=> has been implemented!
+		
+cd + more than one argument -> "bash: cd: too many arguments" 
+		=> has been implemented!
+		
+still might need to disable cd options such as ".." / "." / and " - " since these aren't relative or absolute paths
+		=> error handling implemented!
+		
+adjusted formatting for bracketed echo flags needed!
+		-> example: echo ($(test)) -> syntax error near unexpected token '$(test)'
+		=> successfully implemented!
+
+=======================================================================================================================
+		
+implement proper error handling for "echo (($(test)))" and "echo ($(test)"
+
+typing a valid command within brackets should still run the command, otherwise show an error
+=> bash: (pwd) -> prints out current work directory
+=> bash: (test) -> prints out "test: command not found"
+
+having a valid command but something behind it should highlight the suffix as a format error
+=> bash: (pwd) test -> "bash: syntax error near unexpected token `test'"
+=> bash: (pwd) (env) -> "bash: syntax error near unexpected token `('"
+
+if there's a bracket too much (like ')' for instance) you need to highlight it
+=> bash: (test)) => "bash: syntax error near unexpected token `)'"
+=> this should work no matter if there's a dollar-sign in front or not!
+	=> partially implemented, only seems to show off "(" however?
