@@ -171,7 +171,7 @@ void	is_keyword(t_token *node)
 	char	*keywords[] = {
 			"grep", "wc", "mkdir", "mv", "cp", "rm", "rmdir",
 			"touch", "whoami", "find", "head", "tail", "diff", "find",
-			"cat", "ls", "date", "touch", NULL};
+			"cat", "ls", "date", "touch", "sort", "clear", NULL};
     char	*built_in[] = {
             "cd", "echo", "env", "exit", "export", "pwd", "unset",NULL};
 
@@ -246,52 +246,6 @@ void free_t_command(t_command *head)
 	}
 }
 
-void	redirect_stdout_to_file(char *file_name)
-{
-	int	fd;
-
-	fd = open(file_name, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-	if (fd == -1)
-		return ;
-	if (dup2(fd, STDOUT_FILENO) == -1)
-		return ;
-	close(fd);
-}
-
-void	redirect_stdin_from_file(char *file_name)
-{
-	int	fd;
-
-	fd = open(file_name, O_RDONLY);
-	if (fd == -1)
-		return ;  // handle error
-	if (dup2(fd, STDIN_FILENO) == -1)
-		return ;  // handle error
-	close(fd);
-}
-
-void	append_stdout_to_file(char *file_name)
-{
-	int	fd;
-
-	fd = open(file_name, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
-	if (fd == -1)
-		return ;
-	if (dup2(fd, STDOUT_FILENO) == -1)
-		return ;
-	close(fd);
-}
-
-void	read_stdin_from_string(char *str)
-{
-	int	pfd[2];
-
-	pipe(pfd);
-	write(pfd[1], str, strlen(str));
-	close(pfd[1]);
-	dup2(pfd[0], STDIN_FILENO);
-	close(pfd[0]);
-}
 
 void add_command_node(t_command **current, t_token **tmp, char **path)
 {
@@ -399,107 +353,138 @@ void print_command_list(t_command *head)
 	}
 }
 
-void execute_command(char **cmd, char **envp, int in_fd, int out_fd) {
-	pid_t pid;
-
-	pid = fork();
-	if (pid == -1) {
-		perror("fork");
-		exit(EXIT_FAILURE);
-	}
-
-	if (pid == 0) {
-		if (in_fd != STDIN_FILENO) {
-			if (dup2(in_fd, STDIN_FILENO) == -1) {
-				perror("dup2");
-				exit(EXIT_FAILURE);
-			}
-			close(in_fd);
-		}
-		if (out_fd != STDOUT_FILENO) {
-			if (dup2(out_fd, STDOUT_FILENO) == -1) {
-				perror("dup2");
-				exit(EXIT_FAILURE);
-			}
-			close(out_fd);
-		}
-
-		if (execve(cmd[0], cmd, envp) == -1) {
-			perror("execve");
-			exit(EXIT_FAILURE);
-		}
-	}
-	else {
-		waitpid(pid, NULL, 0);
-	}
+void redirect_stdout_to_file(char *file_name, int *out_fd)
+{
+    *out_fd = open(file_name, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+    if (*out_fd == -1) {
+        perror("open");
+        exit(EXIT_FAILURE);
+    }
 }
 
-void handle_redirection(t_command *current)
+void redirect_stdin_from_file(char *file_name, int *in_fd)
 {
-	if (current->next && current->next->separator)
-	{
-		if (strcmp(current->next->separator, ">") == 0)
-		{
-			if(current->next->next && current->next->next->arguments)
-			{
-				redirect_stdout_to_file(current->next->next->arguments);
-			}
-		}
-		else if (strcmp(current->next->separator, "<") == 0)
-		{
-			if(current->next->next && current->next->next->arguments)
-			{
-				redirect_stdin_from_file(current->next->next->arguments);
-			}
-		}
-		else if (strcmp(current->next->separator, ">>") == 0)
-		{
-			if(current->next->next && current->next->next->arguments)
-			{
-				append_stdout_to_file(current->next->next->arguments);
-			}
-		}
-		else if (strcmp(current->next->separator, "<<") == 0)
-		{
-			if(current->next->next && current->next->next->arguments)
-			{
-				read_stdin_from_string(current->next->next->arguments);
-			}
-		}
-	}
+    *in_fd = open(file_name, O_RDONLY);
+    if (*in_fd == -1) {
+        perror("open");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void append_stdout_to_file(char *file_name, int *out_fd)
+{
+    *out_fd = open(file_name, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR);
+    if (*out_fd == -1) {
+        perror("open");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void read_stdin_from_string(char *str, int *in_fd)
+{
+    int pfd[2];
+    pipe(pfd);
+
+    size_t str_len = strlen(str);
+    ssize_t bytes_written = write(pfd[1], str, str_len);
+    if (bytes_written != (ssize_t)str_len) {
+        perror("write");
+        exit(EXIT_FAILURE);
+    }
+
+    close(pfd[1]);
+    *in_fd = pfd[0];
+}
+
+void execute_command(char **cmd, char **envp, int in_fd, int out_fd) {
+    pid_t pid;
+
+    pid = fork();
+    if (pid == -1) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+
+    if (pid == 0) {
+        if (in_fd != STDIN_FILENO) {
+            if (dup2(in_fd, STDIN_FILENO) == -1) {
+                perror("dup2");
+                exit(EXIT_FAILURE);
+            }
+            close(in_fd);
+        }
+        if (out_fd != STDOUT_FILENO) {
+            if (dup2(out_fd, STDOUT_FILENO) == -1) {
+                perror("dup2");
+                exit(EXIT_FAILURE);
+            }
+            close(out_fd);
+        }
+
+        if (execve(cmd[0], cmd, envp) == -1) {
+            perror("execve");
+            exit(EXIT_FAILURE);
+        }
+    }
+    else {
+        waitpid(pid, NULL, 0);
+    }
+}
+
+void handle_redirection(t_command *current, int *in_fd, int *out_fd) {
+    if (current->next && current->next->separator) {
+        if (current->next && current->next->separator) {
+            if (strcmp(current->next->separator, ">") == 0) {
+                if (current->next->next && current->next->next->arguments) {
+                    redirect_stdout_to_file(current->next->next->arguments, out_fd);
+                }
+            } else if (strcmp(current->next->separator, "<") == 0) {
+                if (current->next->next && current->next->next->arguments) {
+                    redirect_stdin_from_file(current->next->next->arguments, in_fd);
+                }
+            } else if (strcmp(current->next->separator, ">>") == 0) {
+                if (current->next->next && current->next->next->arguments) {
+                    append_stdout_to_file(current->next->next->arguments, out_fd);
+                }
+            } else if (strcmp(current->next->separator, "<<") == 0) {
+                if (current->next->next && current->next->next->arguments) {
+                    read_stdin_from_string(current->next->next->arguments, in_fd);
+                }
+            }
+        }
+    }
 }
 
 void tree(t_command *commands, char **envp)
 {
-	t_command *current = commands;
-	int pipefd[2], in_fd = STDIN_FILENO;
+    t_command *current = commands;
+    int pipefd[2], in_fd = STDIN_FILENO, out_fd = STDOUT_FILENO;
 
-	while (current != NULL)
-	{
-		if (current->command)
-		{
-			int out_fd = STDOUT_FILENO;
-			if (current->next && current->next->separator) {
-				if (strcmp(current->next->separator, "|") == 0) {
-					if (pipe(pipefd) == -1) {
-						perror("pipe");
-						exit(EXIT_FAILURE);
-					}
-					out_fd = pipefd[1];
-				}
-				else {
-					handle_redirection(current);
-				}
-			}
+    while (current != NULL)
+    {
+        if (current->command)
+        {
+            if (current->next && current->next->separator) {
+                if (strcmp(current->next->separator, "|") == 0) {
+                    if (pipe(pipefd) == -1) {
+                        perror("pipe");
+                        exit(EXIT_FAILURE);
+                    }
+                    out_fd = pipefd[1];
+                }
+                else {
+                    handle_redirection(current, &in_fd, &out_fd);
+                }
+            }
 
-			execute_command(current->command, envp, in_fd, out_fd);
-			if (out_fd != STDOUT_FILENO) {
-				close(out_fd);
-				in_fd = pipefd[0];
-			}
-		}
-		current = current->next;
-	}
+            execute_command(current->command, envp, in_fd, out_fd);
+            if (out_fd != STDOUT_FILENO) {
+                close(out_fd);
+                in_fd = pipefd[0];
+            }
+        }
+        current = current->next;
+    }
 }
 
 

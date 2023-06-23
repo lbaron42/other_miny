@@ -19,6 +19,8 @@
 
 #include "minishell.h"
 
+
+
 /*	main.c: 1.	*/
 /*	Checking if the declared "exit" command is being paired with arguments,
 	display a custom notification instead. This is also to prevent the shell 
@@ -116,6 +118,7 @@ void	sigint_handler(int sig)
 	In case of a malloc-fail we need to clear out everything and then
 	shut down the program. Do not forget to include the struct(s) which
 	we have yet to implement!						*/
+
 
 int	main(int argc, char **argv, char **envp)
 {
