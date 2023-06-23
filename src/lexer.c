@@ -458,12 +458,13 @@ void handle_redirection(t_command *current, int *in_fd, int *out_fd) {
 void tree(t_command *commands, char **envp)
 {
     t_command *current = commands;
-    int pipefd[2], in_fd = STDIN_FILENO, out_fd = STDOUT_FILENO;
+    int pipefd[2], in_fd = STDIN_FILENO;
 
     while (current != NULL)
     {
         if (current->command)
         {
+        	int out_fd = STDOUT_FILENO;
             if (current->next && current->next->separator) {
                 if (strcmp(current->next->separator, "|") == 0) {
                     if (pipe(pipefd) == -1) {
@@ -473,10 +474,10 @@ void tree(t_command *commands, char **envp)
                     out_fd = pipefd[1];
                 }
                 else {
+                	out_fd = STDOUT_FILENO;
                     handle_redirection(current, &in_fd, &out_fd);
                 }
             }
-
             execute_command(current->command, envp, in_fd, out_fd);
             if (out_fd != STDOUT_FILENO) {
                 close(out_fd);
